@@ -14,8 +14,8 @@ const hairstylePrices = {
     "Wig installations": 60
 };
 
-// Housecall extra charges (hidden from UI but used for deposit calculation)
-const housecallFee = 30; // Flat fee for housecall
+// Housecall has NO extra charge - just a service option
+const housecallFee = 0; // Removed the €30 fee
 
 // Load appointments from storage
 let appointments = [];
@@ -62,17 +62,11 @@ function updatePriceDisplay() {
     
     if (hairstyle && hairstylePrices[hairstyle]) {
         const basePrice = hairstylePrices[hairstyle];
-        const extraFee = (serviceType === 'housecall') ? housecallFee : 0;
-        const totalPrice = basePrice + extraFee;
+        // Housecall has NO extra charge - same price as studio
+        const totalPrice = basePrice;
         const depositAmount = totalPrice * 0.2;
         
-        let serviceText = "Studio Visit";
-        if (serviceType === 'housecall') serviceText = "Housecall";
-        
         let breakdownHtml = `<div class="breakdown-item">Hairstyle: €${basePrice}</div>`;
-        if (serviceType === 'housecall') {
-            breakdownHtml += `<div class="breakdown-item">${serviceText}: +€${housecallFee}</div>`;
-        }
         breakdownHtml += `<div class="breakdown-item highlight">Total: €${totalPrice}</div>`;
         
         priceBreakdownDiv.innerHTML = breakdownHtml;
@@ -310,10 +304,9 @@ async function createBooking(e) {
         return;
     }
     
-    // Calculate prices
+    // Calculate prices - NO extra charge for housecall
     const basePrice = hairstylePrices[hairstyle] || 70;
-    const extraFee = (serviceType === 'housecall') ? housecallFee : 0;
-    const totalPrice = basePrice + extraFee;
+    const totalPrice = basePrice; // Housecall same price as studio
     const depositAmount = totalPrice * 0.2;
     
     const bookingData = {
@@ -411,8 +404,7 @@ function saveEdit() {
         const newHairstyle = document.getElementById('modalHairstyle').value;
         
         const basePrice = hairstylePrices[newHairstyle] || 70;
-        const extraFee = (newServiceType === 'housecall') ? housecallFee : 0;
-        const totalPrice = basePrice + extraFee;
+        const totalPrice = basePrice; // No extra charge for housecall
         const depositAmount = totalPrice * 0.2;
         
         appointments[index] = {
