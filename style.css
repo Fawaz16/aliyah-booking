@@ -782,3 +782,152 @@ body.alternate {
         font-size: 18px;
     }
 }
+
+
+/* Price Breakdown Styles */
+.deposit-price {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+}
+
+.price-breakdown {
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+}
+
+.breakdown-item {
+    padding: 3px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.breakdown-item.highlight {
+    font-weight: 700;
+    color: var(--primary-dark);
+    border-top: 1px solid var(--border);
+    margin-top: 5px;
+    padding-top: 5px;
+}
+
+.total-amount {
+    text-align: right;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+
+.loading-overlay.show {
+    display: flex;
+}
+
+.loading-spinner {
+    background: var(--bg-white);
+    padding: 30px 40px;
+    border-radius: 25px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: fadeIn 0.3s ease;
+}
+
+.loading-spinner i {
+    font-size: 48px;
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+.loading-spinner p {
+    color: var(--text-dark);
+    font-size: 16px;
+    margin: 0;
+}
+
+/* Price Breakdown Styles */
+.deposit-price {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+}
+
+.price-breakdown {
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+}
+
+.breakdown-item {
+    padding: 3px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.breakdown-item.highlight {
+    font-weight: 700;
+    color: var(--primary-dark);
+    border-top: 1px solid var(--border);
+    margin-top: 5px;
+    padding-top: 5px;
+}
+
+.total-amount {
+    text-align: right;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+
+.loading-overlay.show {
+    display: flex;
+}
+
+.loading-spinner {
+    background: var(--bg-white);
+    padding: 30px 40px;
+    border-radius: 25px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: fadeIn 0.3s ease;
+}
+
+.loading-spinner i {
+    font-size: 48px;
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+.loading-spinner p {
+    color: var(--text-dark);
+    font-size: 16px;
+    margin: 0;
+}

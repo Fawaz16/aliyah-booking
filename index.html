@@ -29,9 +29,9 @@
                 <h2>Braids • Curls • Wigs</h2>
                 <p>Premium hairstyling in Dublin & Drogheda. Book your transformation today.</p>
                 <div class="hero-stats">
-                    <div><i class="fas fa-star"></i> 8+ years expertise</div>
                     <div><i class="fas fa-map-marker-alt"></i> Dublin • Drogheda</div>
                     <div><i class="fas fa-hand-holding-heart"></i> 20% deposit secures slot</div>
+                    <div><i class="fas fa-home"></i> Housecall available</div>
                 </div>
             </div>
             <div class="hero-illustration">
@@ -61,10 +61,10 @@
                     
                     <div class="row-2">
                         <div class="input-field">
-                            <label><i class="fas fa-map-marker-alt"></i> Location *</label>
-                            <select id="location">
-                                <option value="Dublin">📍 Dublin City Centre</option>
-                                <option value="Drogheda">📍 Drogheda (Co. Louth)</option>
+                            <label><i class="fas fa-map-marker-alt"></i> Service Type *</label>
+                            <select id="serviceType" required>
+                                <option value="studio">📍 Studio Visit (Dublin/Drogheda)</option>
+                                <option value="housecall">🏠 Housecall</option>
                             </select>
                         </div>
                         <div class="input-field">
@@ -79,22 +79,28 @@
                         </div>
                     </div>
 
+                    <!-- Housecall Address Field (shows when housecall selected) -->
+                    <div class="input-field" id="addressField" style="display: none;">
+                        <label><i class="fas fa-home"></i> Full Address *</label>
+                        <textarea id="address" rows="2" placeholder="Street name, house number, Eircode, city..."></textarea>
+                    </div>
+
                     <div class="input-field">
                         <label><i class="fas fa-magic"></i> Select Hairstyle *</label>
                         <select id="hairstyle" required>
                             <option value="">-- Choose your style --</option>
-                            <option value="BOHO BRAIDS">✨ BOHO BRAIDS (Bohemian)</option>
-                            <option value="Knotless braids">✨ Knotless Braids</option>
-                            <option value="Twist braids">✨ Twist Braids (Senegalese)</option>
-                            <option value="Braids">✨ Classic Braids</option>
-                            <option value="Cornrows">✨ Cornrows</option>
-                            <option value="Island twist">✨ Island Twist</option>
-                            <option value="French curls">✨ French Curls</option>
-                            <option value="Bantu braids">✨ Bantu Braids</option>
-                            <option value="Tyla / half cornrow and braids">✨ Tyla Style (Half Cornrow + Braids)</option>
-                            <option value="Box braids">✨ Box Braids</option>
-                            <option value="Sewin">✨ Sew-In Weave</option>
-                            <option value="Wig installations">✨ Wig Installation & Customisation</option>
+                            <option value="BOHO BRAIDS">✨ BOHO BRAIDS - €80</option>
+                            <option value="Knotless braids">✨ Knotless Braids - €80</option>
+                            <option value="Twist braids">✨ Twist Braids - €80</option>
+                            <option value="Braids">✨ Classic Braids - €70</option>
+                            <option value="Cornrows">✨ Cornrows - €30</option>
+                            <option value="Island twist">✨ Island Twist - €80</option>
+                            <option value="French curls">✨ French Curls - €70</option>
+                            <option value="Bantu braids">✨ Bantu Braids - €70</option>
+                            <option value="Tyla / half cornrow and braids">✨ Tyla Style - €70</option>
+                            <option value="Box braids">✨ Box Braids - €80</option>
+                            <option value="Sewin">✨ Sew-In Weave - €70</option>
+                            <option value="Wig installations">✨ Wig Installation - €60</option>
                         </select>
                     </div>
 
@@ -119,13 +125,17 @@
                         </select>
                     </div>
 
-                    <div class="deposit-card">
+                    <div class="deposit-card" id="depositCard">
                         <div class="deposit-info">
                             <i class="fas fa-lock"></i>
                             <div>
                                 <strong>🔒 20% deposit required to secure booking</strong>
-                                <p>Remaining balance payable on the day (card/cash)</p>
+                                <p id="depositAmountText">Select hairstyle to see deposit amount</p>
                             </div>
+                        </div>
+                        <div class="deposit-price" id="depositPriceBox">
+                            <div class="price-breakdown" id="priceBreakdown"></div>
+                            <div class="total-amount" id="totalAmount"></div>
                         </div>
                     </div>
 
@@ -190,31 +200,33 @@
                     <label>Phone</label>
                     <input type="tel" id="modalPhone">
                 </div>
-                <div class="row-2">
-                    <div class="input-field">
-                        <label>Location</label>
-                        <select id="modalLocation">
-                            <option value="Dublin">📍 Dublin City Centre</option>
-                            <option value="Drogheda">📍 Drogheda</option>
-                        </select>
-                    </div>
-                    <div class="input-field">
-                        <label>Hairstyle</label>
-                        <select id="modalHairstyle">
-                            <option value="BOHO BRAIDS">✨ BOHO BRAIDS</option>
-                            <option value="Knotless braids">✨ Knotless Braids</option>
-                            <option value="Twist braids">✨ Twist Braids</option>
-                            <option value="Braids">✨ Classic Braids</option>
-                            <option value="Cornrows">✨ Cornrows</option>
-                            <option value="Island twist">✨ Island Twist</option>
-                            <option value="French curls">✨ French Curls</option>
-                            <option value="Bantu braids">✨ Bantu Braids</option>
-                            <option value="Tyla / half cornrow and braids">✨ Tyla Style</option>
-                            <option value="Box braids">✨ Box Braids</option>
-                            <option value="Sewin">✨ Sew-In</option>
-                            <option value="Wig installations">✨ Wig Installation</option>
-                        </select>
-                    </div>
+                <div class="input-field">
+                    <label>Service Type</label>
+                    <select id="modalServiceType">
+                        <option value="studio">📍 Studio Visit</option>
+                        <option value="housecall">🏠 Housecall</option>
+                    </select>
+                </div>
+                <div class="input-field">
+                    <label>Address (if housecall)</label>
+                    <textarea id="modalAddress" rows="2"></textarea>
+                </div>
+                <div class="input-field">
+                    <label>Hairstyle</label>
+                    <select id="modalHairstyle">
+                        <option value="BOHO BRAIDS">✨ BOHO BRAIDS - €80</option>
+                        <option value="Knotless braids">✨ Knotless Braids - €80</option>
+                        <option value="Twist braids">✨ Twist Braids - €80</option>
+                        <option value="Braids">✨ Classic Braids - €70</option>
+                        <option value="Cornrows">✨ Cornrows - €30</option>
+                        <option value="Island twist">✨ Island Twist - €80</option>
+                        <option value="French curls">✨ French Curls - €70</option>
+                        <option value="Bantu braids">✨ Bantu Braids - €70</option>
+                        <option value="Tyla / half cornrow and braids">✨ Tyla Style - €70</option>
+                        <option value="Box braids">✨ Box Braids - €80</option>
+                        <option value="Sewin">✨ Sew-In - €70</option>
+                        <option value="Wig installations">✨ Wig Installation - €60</option>
+                    </select>
                 </div>
                 <div class="row-2">
                     <div class="input-field">
@@ -259,7 +271,7 @@
         </div>
     </div>
 
-    <!-- Loading Overlay for Payment Processing -->
+    <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-spinner">
             <i class="fas fa-spinner fa-spin"></i>

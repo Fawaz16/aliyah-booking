@@ -1,7 +1,28 @@
+// Price mapping for hairstyles (in Euros)
+const hairstylePrices = {
+    "BOHO BRAIDS": 80,
+    "Knotless braids": 80,
+    "Twist braids": 80,
+    "Braids": 70,
+    "Cornrows": 30,
+    "Island twist": 80,
+    "French curls": 70,
+    "Bantu braids": 70,
+    "Tyla / half cornrow and braids": 70,
+    "Box braids": 80,
+    "Sewin": 70,
+    "Wig installations": 60
+};
+
+// Housecall extra charges (hidden from UI but used for deposit calculation)
+const housecallFee = 30; // Flat fee for housecall
+
 // Load appointments from storage
 let appointments = [];
 let notifications = [];
-let pendingBooking = null;
+
+// API Configuration - Update this to your backend URL when deployed
+const API_URL = '/api/create-checkout';
 
 // DOM elements
 const bookingsListEl = document.getElementById('bookingsList');
@@ -11,32 +32,69 @@ const colorToggleBtn = document.getElementById('colorToggleBtn');
 const toggleText = document.getElementById('toggleThemeText');
 const refreshBtn = document.getElementById('refreshBtn');
 const appointmentCountSpan = document.getElementById('appointmentCount');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const hairstyleSelect = document.getElementById('hairstyle');
+const serviceTypeSelect = document.getElementById('serviceType');
+const addressField = document.getElementById('addressField');
+const depositAmountText = document.getElementById('depositAmountText');
+const priceBreakdownDiv = document.getElementById('priceBreakdown');
+const totalAmountDiv = document.getElementById('totalAmount');
 
-// Load appointments
+// Show/hide address field based on service type
+function toggleAddressField() {
+    const serviceType = serviceTypeSelect?.value;
+    if (serviceType === 'housecall') {
+        addressField.style.display = 'block';
+        document.getElementById('address').required = true;
+    } else {
+        addressField.style.display = 'none';
+        document.getElementById('address').required = false;
+    }
+    updatePriceDisplay();
+}
+
+serviceTypeSelect?.addEventListener('change', toggleAddressField);
+
+// Update price display
+function updatePriceDisplay() {
+    const hairstyle = hairstyleSelect?.value;
+    const serviceType = serviceTypeSelect?.value;
+    
+    if (hairstyle && hairstylePrices[hairstyle]) {
+        const basePrice = hairstylePrices[hairstyle];
+        const extraFee = (serviceType === 'housecall') ? housecallFee : 0;
+        const totalPrice = basePrice + extraFee;
+        const depositAmount = totalPrice * 0.2;
+        
+        let serviceText = "Studio Visit";
+        if (serviceType === 'housecall') serviceText = "Housecall";
+        
+        let breakdownHtml = `<div class="breakdown-item">Hairstyle: €${basePrice}</div>`;
+        if (serviceType === 'housecall') {
+            breakdownHtml += `<div class="breakdown-item">${serviceText}: +€${housecallFee}</div>`;
+        }
+        breakdownHtml += `<div class="breakdown-item highlight">Total: €${totalPrice}</div>`;
+        
+        priceBreakdownDiv.innerHTML = breakdownHtml;
+        totalAmountDiv.innerHTML = `Deposit (20%): <strong>€${depositAmount.toFixed(2)}</strong>`;
+        depositAmountText.innerHTML = `20% deposit required to secure your booking`;
+    } else {
+        priceBreakdownDiv.innerHTML = `<div class="breakdown-item">Select a hairstyle to see price</div>`;
+        totalAmountDiv.innerHTML = ``;
+        depositAmountText.innerHTML = `Select hairstyle to see deposit amount`;
+    }
+}
+
+hairstyleSelect?.addEventListener('change', updatePriceDisplay);
+serviceTypeSelect?.addEventListener('change', updatePriceDisplay);
+
+// Load appointments (no demo data)
 function loadAppointments() {
     const saved = localStorage.getItem('hairdressing_appointments');
     if (saved) {
         appointments = JSON.parse(saved);
     } else {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        appointments = [{
-            id: 'demo1',
-            name: 'Sarah Miller',
-            email: 'sarah@example.com',
-            phone: '0851234567',
-            location: 'Dublin',
-            hairstyle: 'Box braids',
-            duration: '3.5 hours',
-            date: tomorrow.toISOString().split('T')[0],
-            time: '11:00',
-            reminderHours: 3,
-            notes: 'First time client, medium length',
-            depositPaid: true,
-            reminderHistory: [],
-            createdAt: new Date().toISOString()
-        }];
+        appointments = []; // Empty - no demo appointment
         saveAppointments();
     }
     renderAppointments();
@@ -54,6 +112,12 @@ function updateAppointmentCount() {
     }
 }
 
+// Get service type display name
+function getServiceTypeDisplay(serviceType) {
+    if (serviceType === 'studio') return '📍 Studio Visit';
+    return '🏠 Housecall';
+}
+
 // Render appointments
 function renderAppointments() {
     if (!bookingsListEl) return;
@@ -66,6 +130,7 @@ function renderAppointments() {
     bookingsListEl.innerHTML = appointments.map(apt => {
         const aptDate = new Date(apt.date);
         const formattedDate = aptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const serviceDisplay = getServiceTypeDisplay(apt.serviceType);
         
         return `
             <div class="booking-card">
@@ -74,14 +139,16 @@ function renderAppointments() {
                     <span class="booking-hairstyle">${escapeHtml(apt.hairstyle)}</span>
                 </div>
                 <div class="booking-details">
-                    <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(apt.location)}</span>
+                    <span><i class="fas ${apt.serviceType === 'studio' ? 'fa-building' : 'fa-home'}"></i> ${serviceDisplay}</span>
                     <span><i class="fas fa-calendar"></i> ${formattedDate}</span>
                     <span><i class="fas fa-clock"></i> ${apt.time}</span>
                 </div>
                 <div class="booking-details">
                     <span><i class="fas fa-hourglass"></i> ${apt.duration}</span>
+                    <span><i class="fas fa-euro-sign"></i> Total: €${apt.totalPrice}</span>
                 </div>
-                <div class="deposit-badge">💰 Deposit Paid</div>
+                ${apt.address ? `<div class="booking-details"><span><i class="fas fa-map-pin"></i> ${escapeHtml(apt.address.substring(0, 50))}${apt.address.length > 50 ? '...' : ''}</span></div>` : ''}
+                <div class="deposit-badge">💰 Deposit: €${apt.depositAmount} paid (20%)</div>
                 <div class="booking-actions">
                     <button class="edit-btn" data-id="${apt.id}"><i class="fas fa-edit"></i> Edit</button>
                     <button class="delete-btn" data-id="${apt.id}"><i class="fas fa-trash"></i> Delete</button>
@@ -145,7 +212,7 @@ function sendManualReminder(id) {
     const apt = appointments.find(a => a.id === id);
     if (!apt) return;
     
-    const msg = `🔔 REMINDER: ${apt.name}, your ${apt.hairstyle} appointment is on ${apt.date} at ${apt.time} in ${apt.location}. See you! 💇‍♀️`;
+    const msg = `🔔 REMINDER: ${apt.name}, your ${apt.hairstyle} appointment is on ${apt.date} at ${apt.time}. Total: €${apt.totalPrice}, Deposit paid: €${apt.depositAmount}. See you! 💇‍♀️`;
     addNotification(msg);
     addNotification(`✅ Reminder sent to ${apt.name}`);
     
@@ -173,7 +240,7 @@ function checkReminders() {
             const alreadySent = apt.reminderHistory && apt.reminderHistory.includes(reminderKey);
             
             if (!alreadySent) {
-                const msg = `⏰ REMINDER: ${apt.name}, your ${apt.hairstyle} appointment is in ${hoursBefore} hour(s) at ${apt.time} in ${apt.location}!`;
+                const msg = `⏰ REMINDER: ${apt.name}, your ${apt.hairstyle} appointment is in ${hoursBefore} hour(s) at ${apt.time}!`;
                 addNotification(msg);
                 
                 if (!apt.reminderHistory) apt.reminderHistory = [];
@@ -184,91 +251,38 @@ function checkReminders() {
     });
 }
 
-// Open Payment Modal
-function openPaymentModal(bookingData) {
-    pendingBooking = bookingData;
+// Check for successful payment after redirect
+function checkPaymentSuccess() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+    const tempBooking = sessionStorage.getItem('temp_booking');
     
-    document.getElementById('paymentHairstyle').textContent = bookingData.hairstyle;
-    document.getElementById('paymentDepositText').innerHTML = '20% Deposit Required';
-    
-    document.getElementById('cardName').value = '';
-    document.getElementById('cardNumber').value = '';
-    document.getElementById('cardExpiry').value = '';
-    document.getElementById('cardCvv').value = '';
-    
-    const paymentModal = document.getElementById('paymentModal');
-    paymentModal.style.display = 'block';
-}
-
-// Process Payment
-function processPayment() {
-    const cardName = document.getElementById('cardName')?.value.trim();
-    const cardNumber = document.getElementById('cardNumber')?.value.trim();
-    const cardExpiry = document.getElementById('cardExpiry')?.value.trim();
-    const cardCvv = document.getElementById('cardCvv')?.value.trim();
-    
-    if (!cardName || !cardNumber || !cardExpiry || !cardCvv) {
-        addNotification('❌ Please fill in all payment details');
-        return;
-    }
-    
-    const cleanCardNumber = cardNumber.replace(/\s/g, '');
-    if (cleanCardNumber.length < 15 || cleanCardNumber.length > 16) {
-        addNotification('❌ Please enter a valid card number');
-        return;
-    }
-    
-    if (!cardExpiry.match(/^(0[1-9]|1[0-2])\/\d{2}$/)) {
-        addNotification('❌ Please enter valid expiry date (MM/YY)');
-        return;
-    }
-    
-    if (!cardCvv.match(/^\d{3,4}$/)) {
-        addNotification('❌ Please enter valid CVV');
-        return;
-    }
-    
-    addNotification('💳 Processing payment...');
-    
-    setTimeout(() => {
-        addNotification(`✅ Payment successful! 20% deposit confirmed`);
+    if (status === 'paid' && tempBooking) {
+        const bookingData = JSON.parse(tempBooking);
         
-        const newId = 'apt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-        
-        const newAppointment = {
-            id: newId,
-            ...pendingBooking,
-            depositPaid: true,
-            reminderHistory: [],
-            createdAt: new Date().toISOString()
-        };
-        
-        delete newAppointment.depositAmount;
-        
-        appointments.push(newAppointment);
+        appointments.push(bookingData);
         saveAppointments();
         renderAppointments();
         
-        addNotification(`🎉 BOOKING CONFIRMED! ${pendingBooking.name}, your ${pendingBooking.hairstyle} is scheduled for ${pendingBooking.date} at ${pendingBooking.time} in ${pendingBooking.location}`);
-        addNotification(`🔔 You'll receive a reminder ${pendingBooking.reminderHours} hour(s) before`);
+        addNotification(`🎉 BOOKING CONFIRMED! ${bookingData.name}, your ${bookingData.hairstyle} is scheduled for ${bookingData.date} at ${bookingData.time}`);
+        addNotification(`💰 20% deposit (€${bookingData.depositAmount.toFixed(2)}) paid successfully! Remaining €${(bookingData.totalPrice - bookingData.depositAmount).toFixed(2)} due on day.`);
         
-        closePaymentModal();
+        sessionStorage.removeItem('temp_booking');
         
-        document.getElementById('hairBookingForm')?.reset();
-        document.getElementById('location').value = 'Dublin';
-        
-        pendingBooking = null;
-    }, 1500);
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 }
 
-// Create booking - opens payment page
-function createBooking(e) {
+// Create booking and redirect to SumUp
+async function createBooking(e) {
     e.preventDefault();
     
     const name = document.getElementById('clientName')?.value.trim();
     const email = document.getElementById('clientEmail')?.value.trim();
     const phone = document.getElementById('clientPhone')?.value.trim();
-    const location = document.getElementById('location')?.value;
+    const serviceType = document.getElementById('serviceType')?.value;
+    const address = document.getElementById('address')?.value.trim();
     const hairstyle = document.getElementById('hairstyle')?.value;
     const duration = document.getElementById('duration')?.value;
     const date = document.getElementById('appointmentDate')?.value;
@@ -281,6 +295,12 @@ function createBooking(e) {
         return;
     }
     
+    // Validate address for housecall
+    if (serviceType === 'housecall' && !address) {
+        addNotification('❌ Please enter your full address for housecall service');
+        return;
+    }
+    
     const selectedDate = new Date(date);
     const now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -290,13 +310,62 @@ function createBooking(e) {
         return;
     }
     
+    // Calculate prices
+    const basePrice = hairstylePrices[hairstyle] || 70;
+    const extraFee = (serviceType === 'housecall') ? housecallFee : 0;
+    const totalPrice = basePrice + extraFee;
+    const depositAmount = totalPrice * 0.2;
+    
     const bookingData = {
-        name, email, phone, location, hairstyle, duration,
-        date, time, reminderHours: parseInt(reminderHours),
-        notes
+        id: 'temp_' + Date.now(),
+        name, email, phone, serviceType, address: address || '',
+        hairstyle, duration, date, time,
+        reminderHours: parseInt(reminderHours),
+        notes, depositPaid: false,
+        totalPrice, depositAmount,
+        reminderHistory: [],
+        createdAt: new Date().toISOString()
     };
     
-    openPaymentModal(bookingData);
+    // Store temp booking
+    sessionStorage.setItem('temp_booking', JSON.stringify(bookingData));
+    
+    // Show loading overlay
+    loadingOverlay.classList.add('show');
+    
+    try {
+        // Call your backend to create SumUp checkout
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                amount: depositAmount,
+                currency: 'EUR',
+                customerName: name,
+                customerEmail: email,
+                description: `20% deposit for ${hairstyle} - ${serviceType === 'studio' ? 'Studio' : 'Housecall'} - Total €${totalPrice}`,
+                successUrl: `${window.location.origin}${window.location.pathname}?status=paid`,
+                cancelUrl: `${window.location.origin}${window.location.pathname}?status=cancelled`
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.checkoutUrl) {
+            // Redirect to SumUp payment page
+            window.location.href = data.checkoutUrl;
+        } else {
+            throw new Error('No checkout URL received');
+        }
+        
+    } catch (error) {
+        console.error('Payment error:', error);
+        addNotification('❌ Unable to process payment. Please try again or contact us directly.');
+        loadingOverlay.classList.remove('show');
+        sessionStorage.removeItem('temp_booking');
+    }
 }
 
 // Delete appointment
@@ -319,7 +388,8 @@ function openEditModal(id) {
     document.getElementById('modalName').value = apt.name;
     document.getElementById('modalEmail').value = apt.email;
     document.getElementById('modalPhone').value = apt.phone;
-    document.getElementById('modalLocation').value = apt.location;
+    document.getElementById('modalServiceType').value = apt.serviceType;
+    document.getElementById('modalAddress').value = apt.address || '';
     document.getElementById('modalHairstyle').value = apt.hairstyle;
     document.getElementById('modalDuration').value = apt.duration;
     document.getElementById('modalDate').value = apt.date;
@@ -337,23 +407,34 @@ function saveEdit() {
     const index = appointments.findIndex(a => a.id === id);
     
     if (index !== -1) {
+        const newServiceType = document.getElementById('modalServiceType').value;
+        const newHairstyle = document.getElementById('modalHairstyle').value;
+        
+        const basePrice = hairstylePrices[newHairstyle] || 70;
+        const extraFee = (newServiceType === 'housecall') ? housecallFee : 0;
+        const totalPrice = basePrice + extraFee;
+        const depositAmount = totalPrice * 0.2;
+        
         appointments[index] = {
             ...appointments[index],
             name: document.getElementById('modalName').value,
             email: document.getElementById('modalEmail').value,
             phone: document.getElementById('modalPhone').value,
-            location: document.getElementById('modalLocation').value,
-            hairstyle: document.getElementById('modalHairstyle').value,
+            serviceType: newServiceType,
+            address: document.getElementById('modalAddress').value,
+            hairstyle: newHairstyle,
             duration: document.getElementById('modalDuration').value,
             date: document.getElementById('modalDate').value,
             time: document.getElementById('modalTime').value,
             reminderHours: parseInt(document.getElementById('modalReminderHours').value),
-            notes: document.getElementById('modalNotes').value
+            notes: document.getElementById('modalNotes').value,
+            totalPrice: totalPrice,
+            depositAmount: depositAmount
         };
         
         saveAppointments();
         renderAppointments();
-        addNotification(`✏️ Appointment updated for ${appointments[index].name}`);
+        addNotification(`✏️ Appointment updated for ${appointments[index].name}. New total: €${totalPrice}, Deposit: €${depositAmount}`);
         closeModal();
     }
 }
@@ -361,27 +442,6 @@ function saveEdit() {
 function closeModal() {
     const modal = document.getElementById('editModal');
     if (modal) modal.style.display = 'none';
-}
-
-function closePaymentModal() {
-    const modal = document.getElementById('paymentModal');
-    if (modal) modal.style.display = 'none';
-}
-
-// Format card inputs
-function formatCardNumber(input) {
-    let value = input.value.replace(/\D/g, '');
-    if (value.length > 16) value = value.slice(0, 16);
-    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-    input.value = value;
-}
-
-function formatExpiry(input) {
-    let value = input.value.replace(/\D/g, '');
-    if (value.length >= 2) {
-        value = value.slice(0, 2) + '/' + value.slice(2, 4);
-    }
-    input.value = value;
 }
 
 // Theme toggle
@@ -436,21 +496,10 @@ function escapeHtml(str) {
 document.querySelector('.close-modal')?.addEventListener('click', closeModal);
 document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
 document.getElementById('saveEditBtn')?.addEventListener('click', saveEdit);
-document.querySelector('.close-payment-modal')?.addEventListener('click', closePaymentModal);
-document.getElementById('cancelPaymentBtn')?.addEventListener('click', closePaymentModal);
-document.getElementById('confirmPaymentBtn')?.addEventListener('click', processPayment);
-
-const cardNumberInput = document.getElementById('cardNumber');
-const cardExpiryInput = document.getElementById('cardExpiry');
-
-cardNumberInput?.addEventListener('input', () => formatCardNumber(cardNumberInput));
-cardExpiryInput?.addEventListener('input', () => formatExpiry(cardExpiryInput));
 
 window.addEventListener('click', (e) => {
     const modal = document.getElementById('editModal');
-    const paymentModal = document.getElementById('paymentModal');
     if (e.target === modal) closeModal();
-    if (e.target === paymentModal) closePaymentModal();
 });
 
 // Initialize
@@ -459,7 +508,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
     initNotificationPanel();
     checkReminders();
-    addNotification('🌸 Welcome to Hair Stylist Dublin & Drogheda! 20% deposit required to book.');
+    checkPaymentSuccess();
+    updatePriceDisplay();
+    toggleAddressField();
+    addNotification('🌸 Welcome to Hair Stylist Dublin & Drogheda!');
     
     const form = document.getElementById('hairBookingForm');
     if (form) {
