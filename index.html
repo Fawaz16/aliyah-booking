@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Blush & Curl | Hairdressing Salon</title>
+    <title>Hair Stylist Dublin & Drogheda | Book Your Braids</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -12,38 +12,38 @@
     <div class="app-wrapper">
         <header class="main-header">
             <div class="logo-area">
-                <i class="fas fa-cut"></i>
+                <i class="fas fa-crown"></i>
                 <div>
-                    <h1>Aliyah </h1>
-                    <p>my baby salon</p>
+                    <h1>Hair Stylist Dublin & Drogheda</h1>
+                    <p>luxury braids | protective styles | wig services</p>
                 </div>
             </div>
             <button class="color-toggle-btn" id="colorToggleBtn">
-                <i class="fas fa-palette"></i> <span id="toggleThemeText">LOML</span>
+                <i class="fas fa-palette"></i> <span id="toggleThemeText">Rose blush</span>
             </button>
         </header>
 
         <section class="hero">
             <div class="hero-content">
-                <span class="hero-badge">✨ by appointment only</span>
-                <h2>Your hair, your style</h2>
-                <p>Personalized hair care in a cozy, private studio setting.</p>
+                <span class="hero-badge">✨ 20% deposit required for booking ✨</span>
+                <h2>Braids • Curls • Wigs</h2>
+                <p>Premium hairstyling in Dublin & Drogheda. Book your transformation today.</p>
                 <div class="hero-stats">
-                    <div><i class="fas fa-star"></i> 5+ years experience</div>
-                    <div><i class="fas fa-smile"></i> 100% tailored service</div>
+                    <div><i class="fas fa-star"></i> 8+ years expertise</div>
+                    <div><i class="fas fa-map-marker-alt"></i> Dublin • Drogheda</div>
+                    <div><i class="fas fa-hand-holding-heart"></i> 20% deposit secures slot</div>
                 </div>
             </div>
             <div class="hero-illustration">
-                <i class="fas fa-spa"></i>
+                <i class="fas fa-female"></i>
             </div>
         </section>
 
         <div class="booking-dashboard">
-            <!-- Booking Form -->
             <div class="form-panel">
                 <div class="section-title">
                     <i class="fas fa-calendar-plus"></i> 
-                    <span>Book Your Hair Appointment</span>
+                    <span>Book Your Appointment</span>
                 </div>
                 <form id="hairBookingForm">
                     <div class="input-field">
@@ -56,30 +56,48 @@
                     </div>
                     <div class="input-field">
                         <label><i class="fas fa-phone"></i> Phone *</label>
-                        <input type="tel" id="clientPhone" placeholder="(555) 123-4567" required>
+                        <input type="tel" id="clientPhone" placeholder="(01) 234 5678" required>
                     </div>
+                    
                     <div class="row-2">
-                        <!-- <div class="input-field">
-                            <label><i class="fas fa-cut"></i> Hair Service</label>
-                            <select id="serviceType">
-                                <option value="Women's Haircut">💇‍♀️ Women's Haircut - $45</option>
-                                <option value="Men's Haircut">💇‍♂️ Men's Hair - $35</option>
-                                <option value="Hair Color">🎨 Hair Color - $120</option>
-                                <option value="Highlights">✨ Highlights - $150</option>
-                                <option value="Blowout">💨 Blowout - $40</option>
-                                <option value="Keratin Treatment">✨ Keratin Treatment - $200</option>
+                        <div class="input-field">
+                            <label><i class="fas fa-map-marker-alt"></i> Location *</label>
+                            <select id="location">
+                                <option value="Dublin">📍 Dublin City Centre</option>
+                                <option value="Drogheda">📍 Drogheda (Co. Louth)</option>
                             </select>
-                        </div> -->
+                        </div>
                         <div class="input-field">
                             <label><i class="fas fa-clock"></i> Duration</label>
                             <select id="duration">
-                                <option value="30 min">30 min - Quick Cut</option>
-                                <option value="1 hour">1 hour - Standard Cut</option>
-                                <option value="1.5 hours">1.5 hours - Color</option>
-                                <option value="2 hours">2 hours - Color + Cut</option>
+                                <option value="1.5 hours">1.5 hours - Quick Style</option>
+                                <option value="2.5 hours">2.5 hours - Standard Braids</option>
+                                <option value="3.5 hours">3.5 hours - Full Braids</option>
+                                <option value="4 hours">4 hours - Complex Style</option>
+                                <option value="2 hours">2 hours - Wig Installation</option>
                             </select>
                         </div>
                     </div>
+
+                    <div class="input-field">
+                        <label><i class="fas fa-magic"></i> Select Hairstyle *</label>
+                        <select id="hairstyle" required>
+                            <option value="">-- Choose your style --</option>
+                            <option value="BOHO BRAIDS">✨ BOHO BRAIDS (Bohemian)</option>
+                            <option value="Knotless braids">✨ Knotless Braids</option>
+                            <option value="Twist braids">✨ Twist Braids (Senegalese)</option>
+                            <option value="Braids">✨ Classic Braids</option>
+                            <option value="Cornrows">✨ Cornrows</option>
+                            <option value="Island twist">✨ Island Twist</option>
+                            <option value="French curls">✨ French Curls</option>
+                            <option value="Bantu braids">✨ Bantu Braids</option>
+                            <option value="Tyla / half cornrow and braids">✨ Tyla Style (Half Cornrow + Braids)</option>
+                            <option value="Box braids">✨ Box Braids</option>
+                            <option value="Sewin">✨ Sew-In Weave</option>
+                            <option value="Wig installations">✨ Wig Installation & Customisation</option>
+                        </select>
+                    </div>
+
                     <div class="row-2">
                         <div class="input-field">
                             <label><i class="fas fa-calendar-day"></i> Appointment Date *</label>
@@ -90,53 +108,54 @@
                             <input type="time" id="appointmentTime" required>
                         </div>
                     </div>
-                    <div class="row-2">
-                        <div class="input-field">
-                            <label><i class="fas fa-bell"></i> Reminder Before</label>
-                            <select id="reminderHours">
-                                <option value="1">1 hour before</option>
-                                <option value="3">3 hours before</option>
-                                <option value="6">6 hours before</option>
-                                <option value="24">1 day before</option>
-                            </select>
-                        </div>
-                        <div class="input-field">
-                            <label><i class="fas fa-user-tie"></i> Preferred Style</label>
-                            <select id="stylist">
-                                <option value="Any">Braids</option>
-                                <option value="Sarah">ghana weaving</option>
-                                <option value="Jessica">Notless braids</option>
-                                
-                            </select>
-                        </div>
-                    </div>
+                    
                     <div class="input-field">
-                        <label><i class="fas fa-comment"></i> Special Requests</label>
-                        <textarea id="notes" rows="2" placeholder="Any allergies, inspiration photos, or special requests..."></textarea>
+                        <label><i class="fas fa-bell"></i> Reminder Before</label>
+                        <select id="reminderHours">
+                            <option value="1">1 hour before</option>
+                            <option value="3">3 hours before</option>
+                            <option value="6">6 hours before</option>
+                            <option value="24">1 day before</option>
+                        </select>
                     </div>
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-calendar-check"></i> Book Appointment
+
+                    <div class="deposit-card">
+                        <div class="deposit-info">
+                            <i class="fas fa-lock"></i>
+                            <div>
+                                <strong>🔒 20% deposit required to secure booking</strong>
+                                <p>Remaining balance payable on the day (card/cash)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-field">
+                        <label><i class="fas fa-comment"></i> Special Requests / Hair Reference</label>
+                        <textarea id="notes" rows="2" placeholder="Add hair length, colour preference, inspo photo links, allergies..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        <i class="fas fa-credit-card"></i> Pay 20% Deposit & Book
                     </button>
+                    <p class="deposit-note">*Deposit required to secure your booking. Non-refundable if cancelled within 24h.</p>
                 </form>
             </div>
 
-            <!-- Appointments List -->
             <div class="booking-sidebar">
                 <div class="upcoming-header">
                     <i class="fas fa-list-ul"></i> 
-                    <span>My Appointments</span>
+                    <span>My Appointments (<span id="appointmentCount">0</span>)</span>
                     <button id="refreshBtn" class="icon-btn"><i class="fas fa-sync-alt"></i></button>
                 </div>
                 <div id="bookingsList" class="bookings-list">
-                    <!-- Appointments will appear here -->
+                    <div class="empty-state">✨ No appointments yet.<br>Book your braids or wig style!</div>
                 </div>
                 <div class="info-banner">
-                    <i class="fas fa-bell"></i> Reminders sent automatically
+                    <i class="fas fa-bell"></i> Reminders sent automatically | 20% deposit required
                 </div>
             </div>
         </div>
 
-        <!-- Notification Panel -->
         <div id="notifPanel" class="notification-panel">
             <div class="notif-header">
                 <span><i class="fas fa-bell"></i> Notifications</span>
@@ -149,6 +168,103 @@
             <i class="fas fa-bell"></i>
             <span id="notifCount">0</span>
         </button>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Appointment</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalEditId">
+                <div class="input-field">
+                    <label>Full Name</label>
+                    <input type="text" id="modalName">
+                </div>
+                <div class="input-field">
+                    <label>Email</label>
+                    <input type="email" id="modalEmail">
+                </div>
+                <div class="input-field">
+                    <label>Phone</label>
+                    <input type="tel" id="modalPhone">
+                </div>
+                <div class="row-2">
+                    <div class="input-field">
+                        <label>Location</label>
+                        <select id="modalLocation">
+                            <option value="Dublin">📍 Dublin City Centre</option>
+                            <option value="Drogheda">📍 Drogheda</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <label>Hairstyle</label>
+                        <select id="modalHairstyle">
+                            <option value="BOHO BRAIDS">✨ BOHO BRAIDS</option>
+                            <option value="Knotless braids">✨ Knotless Braids</option>
+                            <option value="Twist braids">✨ Twist Braids</option>
+                            <option value="Braids">✨ Classic Braids</option>
+                            <option value="Cornrows">✨ Cornrows</option>
+                            <option value="Island twist">✨ Island Twist</option>
+                            <option value="French curls">✨ French Curls</option>
+                            <option value="Bantu braids">✨ Bantu Braids</option>
+                            <option value="Tyla / half cornrow and braids">✨ Tyla Style</option>
+                            <option value="Box braids">✨ Box Braids</option>
+                            <option value="Sewin">✨ Sew-In</option>
+                            <option value="Wig installations">✨ Wig Installation</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row-2">
+                    <div class="input-field">
+                        <label>Duration</label>
+                        <select id="modalDuration">
+                            <option value="1.5 hours">1.5 hours</option>
+                            <option value="2.5 hours">2.5 hours</option>
+                            <option value="3.5 hours">3.5 hours</option>
+                            <option value="4 hours">4 hours</option>
+                            <option value="2 hours">2 hours</option>
+                        </select>
+                    </div>
+                    <div class="input-field">
+                        <label>Date</label>
+                        <input type="date" id="modalDate">
+                    </div>
+                </div>
+                <div class="row-2">
+                    <div class="input-field">
+                        <label>Time</label>
+                        <input type="time" id="modalTime">
+                    </div>
+                    <div class="input-field">
+                        <label>Reminder Hours</label>
+                        <select id="modalReminderHours">
+                            <option value="1">1 hour before</option>
+                            <option value="3">3 hours before</option>
+                            <option value="6">6 hours before</option>
+                            <option value="24">1 day before</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-field">
+                    <label>Notes</label>
+                    <textarea id="modalNotes" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-save" id="saveEditBtn">Save Changes</button>
+                <button class="btn-cancel-modal" id="cancelModalBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay for Payment Processing -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Redirecting to secure payment...</p>
+        </div>
     </div>
 
     <script src="index.js"></script>

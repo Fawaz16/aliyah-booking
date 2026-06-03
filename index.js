@@ -1,6 +1,7 @@
 // Load appointments from storage
 let appointments = [];
 let notifications = [];
+let pendingBooking = null;
 
 // DOM elements
 const bookingsListEl = document.getElementById('bookingsList');
@@ -9,14 +10,14 @@ const notifCountEl = document.getElementById('notifCount');
 const colorToggleBtn = document.getElementById('colorToggleBtn');
 const toggleText = document.getElementById('toggleThemeText');
 const refreshBtn = document.getElementById('refreshBtn');
+const appointmentCountSpan = document.getElementById('appointmentCount');
 
-// Load saved appointments
+// Load appointments
 function loadAppointments() {
     const saved = localStorage.getItem('hairdressing_appointments');
     if (saved) {
         appointments = JSON.parse(saved);
     } else {
-        // Demo appointment
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         
@@ -24,32 +25,41 @@ function loadAppointments() {
             id: 'demo1',
             name: 'Sarah Miller',
             email: 'sarah@example.com',
-            phone: '555-1234',
-            service: "Women's Haircut",
-            duration: '1 hour',
+            phone: '0851234567',
+            location: 'Dublin',
+            hairstyle: 'Box braids',
+            duration: '3.5 hours',
             date: tomorrow.toISOString().split('T')[0],
             time: '11:00',
             reminderHours: 3,
-            stylist: 'Sarah',
-            notes: 'First time client',
+            notes: 'First time client, medium length',
+            depositPaid: true,
             reminderHistory: [],
             createdAt: new Date().toISOString()
         }];
         saveAppointments();
     }
     renderAppointments();
+    updateAppointmentCount();
 }
 
 function saveAppointments() {
     localStorage.setItem('hairdressing_appointments', JSON.stringify(appointments));
+    updateAppointmentCount();
 }
 
-// Render appointments to sidebar
+function updateAppointmentCount() {
+    if (appointmentCountSpan) {
+        appointmentCountSpan.innerText = appointments.length;
+    }
+}
+
+// Render appointments
 function renderAppointments() {
     if (!bookingsListEl) return;
     
     if (appointments.length === 0) {
-        bookingsListEl.innerHTML = '<div class="empty-state">✨ No appointments yet.<br>Book your first session!</div>';
+        bookingsListEl.innerHTML = '<div class="empty-state">✨ No appointments yet.<br>Book your braids or wig style!</div>';
         return;
     }
     
@@ -61,17 +71,17 @@ function renderAppointments() {
             <div class="booking-card">
                 <div class="booking-name">
                     <span>💇 ${escapeHtml(apt.name)}</span>
-                    <span class="booking-service">${escapeHtml(apt.service)}</span>
+                    <span class="booking-hairstyle">${escapeHtml(apt.hairstyle)}</span>
                 </div>
                 <div class="booking-details">
+                    <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(apt.location)}</span>
                     <span><i class="fas fa-calendar"></i> ${formattedDate}</span>
                     <span><i class="fas fa-clock"></i> ${apt.time}</span>
-                    <span><i class="fas fa-user-check"></i> ${escapeHtml(apt.stylist)}</span>
                 </div>
                 <div class="booking-details">
                     <span><i class="fas fa-hourglass"></i> ${apt.duration}</span>
-                    <span><i class="fas fa-bell"></i> Reminder: ${apt.reminderHours}h before</span>
                 </div>
+                <div class="deposit-badge">💰 Deposit Paid</div>
                 <div class="booking-actions">
                     <button class="edit-btn" data-id="${apt.id}"><i class="fas fa-edit"></i> Edit</button>
                     <button class="delete-btn" data-id="${apt.id}"><i class="fas fa-trash"></i> Delete</button>
@@ -81,7 +91,6 @@ function renderAppointments() {
         `;
     }).join('');
     
-    // Add event listeners
     document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const id = btn.getAttribute('data-id');
@@ -136,7 +145,7 @@ function sendManualReminder(id) {
     const apt = appointments.find(a => a.id === id);
     if (!apt) return;
     
-    const msg = `🔔 REMINDER: ${apt.name}, your appointment is on ${apt.date} at ${apt.time}. See you at the salon! 💇`;
+    const msg = `🔔 REMINDER: ${apt.name}, your ${apt.hairstyle} appointment is on ${apt.date} at ${apt.time} in ${apt.location}. See you! 💇‍♀️`;
     addNotification(msg);
     addNotification(`✅ Reminder sent to ${apt.name}`);
     
@@ -145,7 +154,7 @@ function sendManualReminder(id) {
     saveAppointments();
 }
 
-// Check for automatic reminders
+// Check reminders
 function checkReminders() {
     const now = new Date();
     
@@ -164,7 +173,7 @@ function checkReminders() {
             const alreadySent = apt.reminderHistory && apt.reminderHistory.includes(reminderKey);
             
             if (!alreadySent) {
-                const msg = `⏰ REMINDER: ${apt.name}, your appointment is in ${hoursBefore} hour(s) at ${apt.time}!`;
+                const msg = `⏰ REMINDER: ${apt.name}, your ${apt.hairstyle} appointment is in ${hoursBefore} hour(s) at ${apt.time} in ${apt.location}!`;
                 addNotification(msg);
                 
                 if (!apt.reminderHistory) apt.reminderHistory = [];
@@ -175,21 +184,99 @@ function checkReminders() {
     });
 }
 
-// Create new booking
+// Open Payment Modal
+function openPaymentModal(bookingData) {
+    pendingBooking = bookingData;
+    
+    document.getElementById('paymentHairstyle').textContent = bookingData.hairstyle;
+    document.getElementById('paymentDepositText').innerHTML = '20% Deposit Required';
+    
+    document.getElementById('cardName').value = '';
+    document.getElementById('cardNumber').value = '';
+    document.getElementById('cardExpiry').value = '';
+    document.getElementById('cardCvv').value = '';
+    
+    const paymentModal = document.getElementById('paymentModal');
+    paymentModal.style.display = 'block';
+}
+
+// Process Payment
+function processPayment() {
+    const cardName = document.getElementById('cardName')?.value.trim();
+    const cardNumber = document.getElementById('cardNumber')?.value.trim();
+    const cardExpiry = document.getElementById('cardExpiry')?.value.trim();
+    const cardCvv = document.getElementById('cardCvv')?.value.trim();
+    
+    if (!cardName || !cardNumber || !cardExpiry || !cardCvv) {
+        addNotification('❌ Please fill in all payment details');
+        return;
+    }
+    
+    const cleanCardNumber = cardNumber.replace(/\s/g, '');
+    if (cleanCardNumber.length < 15 || cleanCardNumber.length > 16) {
+        addNotification('❌ Please enter a valid card number');
+        return;
+    }
+    
+    if (!cardExpiry.match(/^(0[1-9]|1[0-2])\/\d{2}$/)) {
+        addNotification('❌ Please enter valid expiry date (MM/YY)');
+        return;
+    }
+    
+    if (!cardCvv.match(/^\d{3,4}$/)) {
+        addNotification('❌ Please enter valid CVV');
+        return;
+    }
+    
+    addNotification('💳 Processing payment...');
+    
+    setTimeout(() => {
+        addNotification(`✅ Payment successful! 20% deposit confirmed`);
+        
+        const newId = 'apt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        
+        const newAppointment = {
+            id: newId,
+            ...pendingBooking,
+            depositPaid: true,
+            reminderHistory: [],
+            createdAt: new Date().toISOString()
+        };
+        
+        delete newAppointment.depositAmount;
+        
+        appointments.push(newAppointment);
+        saveAppointments();
+        renderAppointments();
+        
+        addNotification(`🎉 BOOKING CONFIRMED! ${pendingBooking.name}, your ${pendingBooking.hairstyle} is scheduled for ${pendingBooking.date} at ${pendingBooking.time} in ${pendingBooking.location}`);
+        addNotification(`🔔 You'll receive a reminder ${pendingBooking.reminderHours} hour(s) before`);
+        
+        closePaymentModal();
+        
+        document.getElementById('hairBookingForm')?.reset();
+        document.getElementById('location').value = 'Dublin';
+        
+        pendingBooking = null;
+    }, 1500);
+}
+
+// Create booking - opens payment page
 function createBooking(e) {
     e.preventDefault();
     
     const name = document.getElementById('clientName')?.value.trim();
     const email = document.getElementById('clientEmail')?.value.trim();
     const phone = document.getElementById('clientPhone')?.value.trim();
+    const location = document.getElementById('location')?.value;
+    const hairstyle = document.getElementById('hairstyle')?.value;
     const duration = document.getElementById('duration')?.value;
     const date = document.getElementById('appointmentDate')?.value;
     const time = document.getElementById('appointmentTime')?.value;
     const reminderHours = document.getElementById('reminderHours')?.value;
-    const stylist = document.getElementById('stylist')?.value;
     const notes = document.getElementById('notes')?.value;
     
-    if (!name || !email || !phone || !date || !time) {
+    if (!name || !email || !phone || !date || !time || !hairstyle) {
         addNotification('❌ Please fill all required fields');
         return;
     }
@@ -203,33 +290,13 @@ function createBooking(e) {
         return;
     }
     
-    const newId = 'apt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-    
-    const newAppointment = {
-        id: newId,
-        name: name,
-        email: email,
-        phone: phone,
-        service: "Hair Service",
-        duration: duration,
-        date: date,
-        time: time,
-        reminderHours: parseInt(reminderHours),
-        stylist: stylist,
-        notes: notes,
-        reminderHistory: [],
-        createdAt: new Date().toISOString()
+    const bookingData = {
+        name, email, phone, location, hairstyle, duration,
+        date, time, reminderHours: parseInt(reminderHours),
+        notes
     };
     
-    appointments.push(newAppointment);
-    saveAppointments();
-    renderAppointments();
-    
-    // Clear form
-    document.getElementById('hairBookingForm')?.reset();
-    
-    addNotification(`✅ Booking confirmed! ${name}, your appointment is scheduled for ${date} at ${time}`);
-    addNotification(`🔔 You'll receive a reminder ${reminderHours} hour(s) before`);
+    openPaymentModal(bookingData);
 }
 
 // Delete appointment
@@ -248,113 +315,20 @@ function openEditModal(id) {
     const apt = appointments.find(a => a.id === id);
     if (!apt) return;
     
-    // Create modal if it doesn't exist
-    let modal = document.getElementById('editModal');
-    if (!modal) {
-        createModal();
-        modal = document.getElementById('editModal');
-    }
-    
-    // Populate modal fields
     document.getElementById('modalEditId').value = apt.id;
     document.getElementById('modalName').value = apt.name;
     document.getElementById('modalEmail').value = apt.email;
     document.getElementById('modalPhone').value = apt.phone;
+    document.getElementById('modalLocation').value = apt.location;
+    document.getElementById('modalHairstyle').value = apt.hairstyle;
     document.getElementById('modalDuration').value = apt.duration;
     document.getElementById('modalDate').value = apt.date;
     document.getElementById('modalTime').value = apt.time;
     document.getElementById('modalReminderHours').value = apt.reminderHours;
-    document.getElementById('modalStylist').value = apt.stylist;
     document.getElementById('modalNotes').value = apt.notes || '';
     
+    const modal = document.getElementById('editModal');
     modal.style.display = 'block';
-}
-
-// Create modal dynamically
-function createModal() {
-    const modalHTML = `
-        <div id="editModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Edit Appointment</h3>
-                    <span class="close-modal">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="modalEditId">
-                    <div class="input-field">
-                        <label>Full Name</label>
-                        <input type="text" id="modalName" placeholder="Full name">
-                    </div>
-                    <div class="input-field">
-                        <label>Email</label>
-                        <input type="email" id="modalEmail" placeholder="Email">
-                    </div>
-                    <div class="input-field">
-                        <label>Phone</label>
-                        <input type="tel" id="modalPhone" placeholder="Phone">
-                    </div>
-                    <div class="row-2">
-                        <div class="input-field">
-                            <label>Duration</label>
-                            <select id="modalDuration">
-                                <option value="30 min">30 min - Quick Cut</option>
-                                <option value="1 hour">1 hour - Standard Cut</option>
-                                <option value="1.5 hours">1.5 hours - Color</option>
-                                <option value="2 hours">2 hours - Color + Cut</option>
-                            </select>
-                        </div>
-                        <div class="input-field">
-                            <label>Reminder Hours</label>
-                            <select id="modalReminderHours">
-                                <option value="1">1 hour before</option>
-                                <option value="3">3 hours before</option>
-                                <option value="6">6 hours before</option>
-                                <option value="24">1 day before</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row-2">
-                        <div class="input-field">
-                            <label>Date</label>
-                            <input type="date" id="modalDate">
-                        </div>
-                        <div class="input-field">
-                            <label>Time</label>
-                            <input type="time" id="modalTime">
-                        </div>
-                    </div>
-                    <div class="input-field">
-                        <label>Stylist</label>
-                        <select id="modalStylist">
-                            <option value="Any">Any Stylist</option>
-                            <option value="Sarah">Sarah (Senior)</option>
-                            <option value="Jessica">Jessica (Color Expert)</option>
-                            <option value="Maria">Maria (Cuts)</option>
-                            <option value="David">David (Men's Specialist)</option>
-                        </select>
-                    </div>
-                    <div class="input-field">
-                        <label>Notes</label>
-                        <textarea id="modalNotes" rows="2"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-save" id="saveEditBtn">Save Changes</button>
-                    <button class="btn-cancel-modal" id="cancelModalBtn">Cancel</button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Add event listeners
-    document.querySelector('.close-modal').addEventListener('click', closeModal);
-    document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
-    document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
-    window.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('editModal')) closeModal();
-    });
 }
 
 // Save edit
@@ -368,11 +342,12 @@ function saveEdit() {
             name: document.getElementById('modalName').value,
             email: document.getElementById('modalEmail').value,
             phone: document.getElementById('modalPhone').value,
+            location: document.getElementById('modalLocation').value,
+            hairstyle: document.getElementById('modalHairstyle').value,
             duration: document.getElementById('modalDuration').value,
             date: document.getElementById('modalDate').value,
             time: document.getElementById('modalTime').value,
             reminderHours: parseInt(document.getElementById('modalReminderHours').value),
-            stylist: document.getElementById('modalStylist').value,
             notes: document.getElementById('modalNotes').value
         };
         
@@ -388,6 +363,27 @@ function closeModal() {
     if (modal) modal.style.display = 'none';
 }
 
+function closePaymentModal() {
+    const modal = document.getElementById('paymentModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// Format card inputs
+function formatCardNumber(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length > 16) value = value.slice(0, 16);
+    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+    input.value = value;
+}
+
+function formatExpiry(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2, 4);
+    }
+    input.value = value;
+}
+
 // Theme toggle
 function initThemeToggle() {
     let isAlt = false;
@@ -398,9 +394,9 @@ function initThemeToggle() {
             toggleText.innerText = 'Purple';
         } else {
             document.body.classList.remove('alternate');
-            toggleText.innerText = 'LOML';
+            toggleText.innerText = 'Rose blush';
         }
-        addNotification(`🎨 Theme changed to ${isAlt ? 'Purple' : 'Pink'}`);
+        addNotification(`🎨 Theme changed to ${isAlt ? 'Purple' : 'Rose Blush'}`);
     });
 }
 
@@ -436,13 +432,34 @@ function escapeHtml(str) {
     });
 }
 
+// Event listeners
+document.querySelector('.close-modal')?.addEventListener('click', closeModal);
+document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
+document.getElementById('saveEditBtn')?.addEventListener('click', saveEdit);
+document.querySelector('.close-payment-modal')?.addEventListener('click', closePaymentModal);
+document.getElementById('cancelPaymentBtn')?.addEventListener('click', closePaymentModal);
+document.getElementById('confirmPaymentBtn')?.addEventListener('click', processPayment);
+
+const cardNumberInput = document.getElementById('cardNumber');
+const cardExpiryInput = document.getElementById('cardExpiry');
+
+cardNumberInput?.addEventListener('input', () => formatCardNumber(cardNumberInput));
+cardExpiryInput?.addEventListener('input', () => formatExpiry(cardExpiryInput));
+
+window.addEventListener('click', (e) => {
+    const modal = document.getElementById('editModal');
+    const paymentModal = document.getElementById('paymentModal');
+    if (e.target === modal) closeModal();
+    if (e.target === paymentModal) closePaymentModal();
+});
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadAppointments();
     initThemeToggle();
     initNotificationPanel();
     checkReminders();
-    addNotification('🌸 Welcome to Aliyah\'s Salon!');
+    addNotification('🌸 Welcome to Hair Stylist Dublin & Drogheda! 20% deposit required to book.');
     
     const form = document.getElementById('hairBookingForm');
     if (form) {
