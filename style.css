@@ -28,9 +28,11 @@ body {
     --border: #ffccd8;
     --shadow: 0 10px 30px rgba(232, 67, 110, 0.1);
     --success: #27ae60;
+    --warning: #f39c12;
+    --danger: #e74c3c;
 }
 
-/* Alternate Theme */
+/* Alternate Purple Theme */
 body.alternate {
     --primary: #9b59b6;
     --primary-dark: #7d3c98;
@@ -143,10 +145,6 @@ body.alternate {
     gap: 8px;
 }
 
-.hero-stats i {
-    font-size: 16px;
-}
-
 .hero-illustration i {
     font-size: 80px;
     color: var(--primary);
@@ -252,16 +250,10 @@ body.alternate {
 }
 
 .deposit-info p {
-    font-size: 11px;
-    color: var(--text-gray);
+    font-size: 13px;
+    color: var(--primary-dark);
     margin-top: 4px;
-}
-
-.deposit-note {
-    font-size: 11px;
-    color: var(--text-gray);
-    text-align: center;
-    margin-top: 12px;
+    font-weight: 600;
 }
 
 .btn-primary {
@@ -286,6 +278,13 @@ body.alternate {
     background: var(--primary-dark);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.deposit-note {
+    font-size: 11px;
+    color: var(--text-gray);
+    text-align: center;
+    margin-top: 12px;
 }
 
 /* Sidebar */
@@ -340,7 +339,15 @@ body.alternate {
     border-radius: 16px;
     border-left: 4px solid var(--primary);
     transition: all 0.3s;
-    animation: fadeIn 0.4s ease;
+}
+
+.booking-card.pending {
+    border-left-color: var(--warning);
+}
+
+.booking-card.failed {
+    border-left-color: var(--danger);
+    opacity: 0.8;
 }
 
 .booking-card:hover {
@@ -385,20 +392,29 @@ body.alternate {
 .deposit-badge {
     background: var(--success);
     color: white;
-    padding: 2px 8px;
+    padding: 4px 10px;
     border-radius: 20px;
-    font-size: 10px;
+    font-size: 11px;
     display: inline-block;
     margin-top: 8px;
 }
 
-.booking-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 12px;
+.deposit-badge.pending {
+    background: var(--warning);
 }
 
-.edit-btn, .delete-btn, .reminder-btn {
+.deposit-badge.failed {
+    background: var(--danger);
+}
+
+.booking-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.edit-btn, .delete-btn, .reminder-btn, .confirm-btn, .resend-link-btn, .fail-payment-btn {
     background: white;
     border: 1px solid var(--primary-light);
     padding: 5px 12px;
@@ -411,21 +427,12 @@ body.alternate {
     gap: 5px;
 }
 
-.edit-btn:hover {
-    background: var(--primary);
-    color: white;
-}
-
-.delete-btn:hover {
-    background: #e74c3c;
-    color: white;
-    border-color: #e74c3c;
-}
-
-.reminder-btn:hover {
-    background: var(--primary);
-    color: white;
-}
+.edit-btn:hover { background: var(--primary); color: white; }
+.delete-btn:hover { background: var(--danger); color: white; }
+.reminder-btn:hover { background: var(--primary); color: white; }
+.confirm-btn { background: var(--success); color: white; border-color: var(--success); }
+.resend-link-btn { background: #3498db; color: white; border-color: #3498db; }
+.fail-payment-btn { background: var(--danger); color: white; border-color: var(--danger); }
 
 .empty-state {
     text-align: center;
@@ -457,10 +464,7 @@ body.alternate {
     border: 1px solid var(--border);
 }
 
-.notification-panel.open {
-    display: flex;
-    animation: slideUp 0.3s ease;
-}
+.notification-panel.open { display: flex; }
 
 .notif-header {
     background: var(--primary);
@@ -518,10 +522,7 @@ body.alternate {
     transition: all 0.3s;
 }
 
-.notif-float-btn:hover {
-    transform: scale(1.1);
-}
-
+.notif-float-btn:hover { transform: scale(1.1); }
 .notif-float-btn span {
     position: absolute;
     top: -5px;
@@ -548,7 +549,6 @@ body.alternate {
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.5);
-    animation: fadeIn 0.3s ease;
 }
 
 .modal-content {
@@ -557,100 +557,8 @@ body.alternate {
     padding: 0;
     border-radius: 25px;
     width: 90%;
-    max-width: 500px;
+    max-width: 550px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    animation: slideUp 0.3s ease;
-}
-
-.payment-modal-content {
-    max-width: 500px;
-}
-
-.payment-header {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-}
-
-.payment-summary {
-    background: var(--primary-soft);
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 20px;
-}
-
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    font-size: 14px;
-    border-bottom: 1px dashed var(--border);
-}
-
-.summary-row:last-child {
-    border-bottom: none;
-}
-
-.summary-row.highlight {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--primary-dark);
-    padding: 10px 0;
-}
-
-.payment-secure {
-    text-align: center;
-    font-size: 12px;
-    color: var(--success);
-    margin: 15px 0;
-    padding: 8px;
-    background: #e8f8f5;
-    border-radius: 30px;
-}
-
-.payment-secure i {
-    margin-right: 5px;
-}
-
-.payment-buttons {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.btn-pay {
-    flex: 2;
-    background: var(--success);
-    color: white;
-    border: none;
-    padding: 14px;
-    border-radius: 40px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.btn-pay:hover {
-    background: #219a52;
-    transform: scale(1.02);
-}
-
-.btn-cancel-payment {
-    flex: 1;
-    background: var(--text-gray);
-    color: white;
-    border: none;
-    padding: 14px;
-    border-radius: 40px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.btn-cancel-payment:hover {
-    background: #5a4a5a;
 }
 
 .modal-header {
@@ -668,15 +576,10 @@ body.alternate {
     font-size: 20px;
 }
 
-.close-modal, .close-payment-modal {
+.close-modal {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.2s;
-}
-
-.close-modal:hover, .close-payment-modal:hover {
-    opacity: 0.7;
 }
 
 .modal-body {
@@ -700,12 +603,6 @@ body.alternate {
     border-radius: 30px;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.2s;
-}
-
-.btn-save:hover {
-    background: var(--primary-dark);
-    transform: scale(1.02);
 }
 
 .btn-cancel-modal {
@@ -716,11 +613,6 @@ body.alternate {
     border-radius: 30px;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.2s;
-}
-
-.btn-cancel-modal:hover {
-    background: #5a4a5a;
 }
 
 /* Animations */
@@ -729,205 +621,21 @@ body.alternate {
     50% { transform: translateY(-10px); }
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 /* Responsive */
 @media (max-width: 900px) {
     .booking-dashboard {
         grid-template-columns: 1fr;
     }
-    
     .hero h2 {
         font-size: 28px;
     }
-    
     .hero-illustration i {
         font-size: 60px;
     }
-    
     body {
         padding: 15px;
     }
-    
-    .hero-stats {
-        gap: 15px;
-    }
-    
-    .modal-content {
-        margin: 10% auto;
-        width: 95%;
-    }
-    
     .logo-area h1 {
         font-size: 18px;
     }
-}
-
-
-/* Price Breakdown Styles */
-.deposit-price {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed var(--border);
-}
-
-.price-breakdown {
-    font-size: 12px;
-    color: var(--text-gray);
-    margin-bottom: 8px;
-}
-
-.breakdown-item {
-    padding: 3px 0;
-    display: flex;
-    justify-content: space-between;
-}
-
-.breakdown-item.highlight {
-    font-weight: 700;
-    color: var(--primary-dark);
-    border-top: 1px solid var(--border);
-    margin-top: 5px;
-    padding-top: 5px;
-}
-
-.total-amount {
-    text-align: right;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--primary);
-}
-
-/* Loading Overlay */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-    backdrop-filter: blur(5px);
-}
-
-.loading-overlay.show {
-    display: flex;
-}
-
-.loading-spinner {
-    background: var(--bg-white);
-    padding: 30px 40px;
-    border-radius: 25px;
-    text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    animation: fadeIn 0.3s ease;
-}
-
-.loading-spinner i {
-    font-size: 48px;
-    color: var(--primary);
-    margin-bottom: 15px;
-}
-
-.loading-spinner p {
-    color: var(--text-dark);
-    font-size: 16px;
-    margin: 0;
-}
-
-/* Price Breakdown Styles */
-.deposit-price {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed var(--border);
-}
-
-.price-breakdown {
-    font-size: 12px;
-    color: var(--text-gray);
-    margin-bottom: 8px;
-}
-
-.breakdown-item {
-    padding: 3px 0;
-    display: flex;
-    justify-content: space-between;
-}
-
-.breakdown-item.highlight {
-    font-weight: 700;
-    color: var(--primary-dark);
-    border-top: 1px solid var(--border);
-    margin-top: 5px;
-    padding-top: 5px;
-}
-
-.total-amount {
-    text-align: right;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--primary);
-}
-
-/* Loading Overlay */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-    backdrop-filter: blur(5px);
-}
-
-.loading-overlay.show {
-    display: flex;
-}
-
-.loading-spinner {
-    background: var(--bg-white);
-    padding: 30px 40px;
-    border-radius: 25px;
-    text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    animation: fadeIn 0.3s ease;
-}
-
-.loading-spinner i {
-    font-size: 48px;
-    color: var(--primary);
-    margin-bottom: 15px;
-}
-
-.loading-spinner p {
-    color: var(--text-dark);
-    font-size: 16px;
-    margin: 0;
 }

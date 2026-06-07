@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Hair Stylist Dublin & Drogheda | Book Your Braids</title>
-    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-wrapper">
@@ -19,7 +19,7 @@
                 </div>
             </div>
             <button class="color-toggle-btn" id="colorToggleBtn">
-                <i class="fas fa-palette"></i> <span id="toggleThemeText">Rose blush</span>
+                <i class="fas fa-palette"></i> <span id="toggleThemeText">Purple dusk</span>
             </button>
         </header>
 
@@ -79,7 +79,6 @@
                         </div>
                     </div>
 
-                    <!-- Housecall Address Field (shows when housecall selected) -->
                     <div class="input-field" id="addressField" style="display: none;">
                         <label><i class="fas fa-home"></i> Full Address *</label>
                         <textarea id="address" rows="2" placeholder="Street name, house number, Eircode, city..."></textarea>
@@ -125,17 +124,13 @@
                         </select>
                     </div>
 
-                    <div class="deposit-card" id="depositCard">
+                    <div class="deposit-card">
                         <div class="deposit-info">
                             <i class="fas fa-lock"></i>
                             <div>
                                 <strong>🔒 20% deposit required to secure booking</strong>
-                                <p id="depositAmountText">Select hairstyle to see deposit amount</p>
+                                <p id="depositAmountText">Select a hairstyle to see deposit</p>
                             </div>
-                        </div>
-                        <div class="deposit-price" id="depositPriceBox">
-                            <div class="price-breakdown" id="priceBreakdown"></div>
-                            <div class="total-amount" id="totalAmount"></div>
                         </div>
                     </div>
 
@@ -144,8 +139,8 @@
                         <textarea id="notes" rows="2" placeholder="Add hair length, colour preference, inspo photo links, allergies..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn-primary" id="submitBtn">
-                        <i class="fas fa-credit-card"></i> Pay 20% Deposit & Book
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-credit-card"></i> Book Appointment - Pay 20% Deposit
                     </button>
                     <p class="deposit-note">*Deposit required to secure your booking. Non-refundable if cancelled within 24h.</p>
                 </form>
@@ -161,7 +156,7 @@
                     <div class="empty-state">✨ No appointments yet.<br>Book your braids or wig style!</div>
                 </div>
                 <div class="info-banner">
-                    <i class="fas fa-bell"></i> Reminders sent automatically | 20% deposit required
+                    <i class="fas fa-bell"></i> Reminders sent automatically | 20% deposit via Revolut
                 </div>
             </div>
         </div>
@@ -268,14 +263,6 @@
                 <button class="btn-save" id="saveEditBtn">Save Changes</button>
                 <button class="btn-cancel-modal" id="cancelModalBtn">Cancel</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Redirecting to secure payment...</p>
         </div>
     </div>
 

@@ -1,4 +1,8 @@
-// Price mapping for hairstyles (in Euros)
+// ============================================
+// HAIR STYLIST BOOKING SYSTEM
+// ============================================
+
+// Prices for hairstyles
 const hairstylePrices = {
     "BOHO BRAIDS": 80,
     "Knotless braids": 80,
@@ -14,167 +18,127 @@ const hairstylePrices = {
     "Wig installations": 60
 };
 
-// Housecall has NO extra charge - just a service option
-const housecallFee = 0; // Removed the €30 fee
+// Your Revolut payment link
+const REVOLUT_LINK = "https://revolut.me/a_alamuoloyede";
 
-// Load appointments from storage
+// Store appointments
 let appointments = [];
 let notifications = [];
 
-// API Configuration - Update this to your backend URL when deployed
-const API_URL = '/api/create-checkout';
+// ============================================
+// LOAD & SAVE APPOINTMENTS
+// ============================================
 
-// DOM elements
-const bookingsListEl = document.getElementById('bookingsList');
-const notifListEl = document.getElementById('notifList');
-const notifCountEl = document.getElementById('notifCount');
-const colorToggleBtn = document.getElementById('colorToggleBtn');
-const toggleText = document.getElementById('toggleThemeText');
-const refreshBtn = document.getElementById('refreshBtn');
-const appointmentCountSpan = document.getElementById('appointmentCount');
-const loadingOverlay = document.getElementById('loadingOverlay');
-const hairstyleSelect = document.getElementById('hairstyle');
-const serviceTypeSelect = document.getElementById('serviceType');
-const addressField = document.getElementById('addressField');
-const depositAmountText = document.getElementById('depositAmountText');
-const priceBreakdownDiv = document.getElementById('priceBreakdown');
-const totalAmountDiv = document.getElementById('totalAmount');
-
-// Show/hide address field based on service type
-function toggleAddressField() {
-    const serviceType = serviceTypeSelect?.value;
-    if (serviceType === 'housecall') {
-        addressField.style.display = 'block';
-        document.getElementById('address').required = true;
-    } else {
-        addressField.style.display = 'none';
-        document.getElementById('address').required = false;
-    }
-    updatePriceDisplay();
-}
-
-serviceTypeSelect?.addEventListener('change', toggleAddressField);
-
-// Update price display
-function updatePriceDisplay() {
-    const hairstyle = hairstyleSelect?.value;
-    const serviceType = serviceTypeSelect?.value;
-    
-    if (hairstyle && hairstylePrices[hairstyle]) {
-        const basePrice = hairstylePrices[hairstyle];
-        // Housecall has NO extra charge - same price as studio
-        const totalPrice = basePrice;
-        const depositAmount = totalPrice * 0.2;
-        
-        let breakdownHtml = `<div class="breakdown-item">Hairstyle: €${basePrice}</div>`;
-        breakdownHtml += `<div class="breakdown-item highlight">Total: €${totalPrice}</div>`;
-        
-        priceBreakdownDiv.innerHTML = breakdownHtml;
-        totalAmountDiv.innerHTML = `Deposit (20%): <strong>€${depositAmount.toFixed(2)}</strong>`;
-        depositAmountText.innerHTML = `20% deposit required to secure your booking`;
-    } else {
-        priceBreakdownDiv.innerHTML = `<div class="breakdown-item">Select a hairstyle to see price</div>`;
-        totalAmountDiv.innerHTML = ``;
-        depositAmountText.innerHTML = `Select hairstyle to see deposit amount`;
-    }
-}
-
-hairstyleSelect?.addEventListener('change', updatePriceDisplay);
-serviceTypeSelect?.addEventListener('change', updatePriceDisplay);
-
-// Load appointments (no demo data)
 function loadAppointments() {
-    const saved = localStorage.getItem('hairdressing_appointments');
+    const saved = localStorage.getItem('hair_appointments');
     if (saved) {
         appointments = JSON.parse(saved);
     } else {
-        appointments = []; // Empty - no demo appointment
-        saveAppointments();
+        appointments = [];
     }
     renderAppointments();
-    updateAppointmentCount();
+    updateCount();
 }
 
 function saveAppointments() {
-    localStorage.setItem('hairdressing_appointments', JSON.stringify(appointments));
-    updateAppointmentCount();
+    localStorage.setItem('hair_appointments', JSON.stringify(appointments));
+    updateCount();
 }
 
-function updateAppointmentCount() {
-    if (appointmentCountSpan) {
-        appointmentCountSpan.innerText = appointments.length;
-    }
+function updateCount() {
+    const countSpan = document.getElementById('appointmentCount');
+    if (countSpan) countSpan.innerText = appointments.length;
 }
 
-// Get service type display name
-function getServiceTypeDisplay(serviceType) {
-    if (serviceType === 'studio') return '📍 Studio Visit';
-    return '🏠 Housecall';
-}
+// ============================================
+// RENDER APPOINTMENTS
+// ============================================
 
-// Render appointments
 function renderAppointments() {
-    if (!bookingsListEl) return;
+    const container = document.getElementById('bookingsList');
+    if (!container) return;
     
     if (appointments.length === 0) {
-        bookingsListEl.innerHTML = '<div class="empty-state">✨ No appointments yet.<br>Book your braids or wig style!</div>';
+        container.innerHTML = '<div class="empty-state">✨ No appointments yet.<br>Book your braids or wig style!</div>';
         return;
     }
     
-    bookingsListEl.innerHTML = appointments.map(apt => {
+    container.innerHTML = '';
+    
+    appointments.forEach(apt => {
         const aptDate = new Date(apt.date);
         const formattedDate = aptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        const serviceDisplay = getServiceTypeDisplay(apt.serviceType);
+        const serviceDisplay = apt.serviceType === 'studio' ? '📍 Studio Visit' : '🏠 Housecall';
         
-        return `
-            <div class="booking-card">
-                <div class="booking-name">
-                    <span>💇 ${escapeHtml(apt.name)}</span>
-                    <span class="booking-hairstyle">${escapeHtml(apt.hairstyle)}</span>
-                </div>
-                <div class="booking-details">
-                    <span><i class="fas ${apt.serviceType === 'studio' ? 'fa-building' : 'fa-home'}"></i> ${serviceDisplay}</span>
-                    <span><i class="fas fa-calendar"></i> ${formattedDate}</span>
-                    <span><i class="fas fa-clock"></i> ${apt.time}</span>
-                </div>
-                <div class="booking-details">
-                    <span><i class="fas fa-hourglass"></i> ${apt.duration}</span>
-                    <span><i class="fas fa-euro-sign"></i> Total: €${apt.totalPrice}</span>
-                </div>
-                ${apt.address ? `<div class="booking-details"><span><i class="fas fa-map-pin"></i> ${escapeHtml(apt.address.substring(0, 50))}${apt.address.length > 50 ? '...' : ''}</span></div>` : ''}
-                <div class="deposit-badge">💰 Deposit: €${apt.depositAmount} paid (20%)</div>
-                <div class="booking-actions">
-                    <button class="edit-btn" data-id="${apt.id}"><i class="fas fa-edit"></i> Edit</button>
-                    <button class="delete-btn" data-id="${apt.id}"><i class="fas fa-trash"></i> Delete</button>
-                    <button class="reminder-btn" data-id="${apt.id}"><i class="fas fa-bell"></i> Remind</button>
-                </div>
+        let statusClass = 'pending';
+        let statusText = 'Awaiting Payment';
+        
+        if (apt.depositPaid) {
+            statusClass = 'paid';
+            statusText = 'Deposit Paid ✓';
+        } else if (apt.paymentFailed) {
+            statusClass = 'failed';
+            statusText = 'Payment Failed';
+        }
+        
+        const card = document.createElement('div');
+        card.className = `booking-card ${statusClass}`;
+        card.innerHTML = `
+            <div class="booking-name">
+                <span>💇 ${escapeHtml(apt.name)}</span>
+                <span class="booking-hairstyle">${escapeHtml(apt.hairstyle)}</span>
+            </div>
+            <div class="booking-details">
+                <span><i class="fas ${apt.serviceType === 'studio' ? 'fa-building' : 'fa-home'}"></i> ${serviceDisplay}</span>
+                <span><i class="fas fa-calendar"></i> ${formattedDate}</span>
+                <span><i class="fas fa-clock"></i> ${apt.time}</span>
+            </div>
+            <div class="booking-details">
+                <span><i class="fas fa-hourglass"></i> ${apt.duration}</span>
+                <span><i class="fas fa-euro-sign"></i> Total: €${apt.totalPrice}</span>
+            </div>
+            ${apt.address ? `<div class="booking-details"><span><i class="fas fa-map-pin"></i> ${escapeHtml(apt.address.substring(0, 50))}</span></div>` : ''}
+            <div class="deposit-badge ${statusClass}">💰 ${statusText} (€${apt.depositAmount})</div>
+            <div class="booking-actions">
+                ${!apt.depositPaid ? `
+                    ${!apt.paymentFailed ? `<button class="confirm-btn" data-id="${apt.id}"><i class="fas fa-check-circle"></i> Confirm Payment</button>` : ''}
+                    <button class="resend-link-btn" data-id="${apt.id}"><i class="fas fa-envelope"></i> Resend Link</button>
+                    ${!apt.paymentFailed ? `<button class="fail-payment-btn" data-id="${apt.id}"><i class="fas fa-times-circle"></i> Mark Failed</button>` : ''}
+                ` : ''}
+                <button class="edit-btn" data-id="${apt.id}"><i class="fas fa-edit"></i> Edit</button>
+                <button class="delete-btn" data-id="${apt.id}"><i class="fas fa-trash"></i> Delete</button>
+                <button class="reminder-btn" data-id="${apt.id}"><i class="fas fa-bell"></i> Remind</button>
             </div>
         `;
-    }).join('');
+        
+        container.appendChild(card);
+    });
     
+    // Add event listeners
+    document.querySelectorAll('.confirm-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => confirmPayment(btn.getAttribute('data-id')));
+    });
+    document.querySelectorAll('.resend-link-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => resendPaymentLink(btn.getAttribute('data-id')));
+    });
+    document.querySelectorAll('.fail-payment-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => markPaymentFailed(btn.getAttribute('data-id')));
+    });
     document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = btn.getAttribute('data-id');
-            openEditModal(id);
-        });
+        btn.addEventListener('click', (e) => openEditModal(btn.getAttribute('data-id')));
     });
-    
     document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = btn.getAttribute('data-id');
-            deleteAppointment(id);
-        });
+        btn.addEventListener('click', (e) => deleteAppointment(btn.getAttribute('data-id')));
     });
-    
     document.querySelectorAll('.reminder-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = btn.getAttribute('data-id');
-            sendManualReminder(id);
-        });
+        btn.addEventListener('click', (e) => sendReminder(btn.getAttribute('data-id')));
     });
 }
 
-// Add notification
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
 function addNotification(message) {
     const notif = {
         id: Date.now(),
@@ -184,11 +148,12 @@ function addNotification(message) {
     notifications.unshift(notif);
     if (notifications.length > 20) notifications.pop();
     
-    if (notifListEl) {
+    const container = document.getElementById('notifList');
+    if (container) {
         if (notifications.length === 0) {
-            notifListEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #aaa;">No notifications yet</div>';
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: #aaa;">No notifications</div>';
         } else {
-            notifListEl.innerHTML = notifications.map(n => `
+            container.innerHTML = notifications.map(n => `
                 <div class="notif-item">
                     <div>📨 ${escapeHtml(n.message)}</div>
                     <div class="notif-time">${n.time}</div>
@@ -197,80 +162,41 @@ function addNotification(message) {
         }
     }
     
-    if (notifCountEl) notifCountEl.innerText = notifications.length;
-    console.log('[NOTIFICATION]', message);
+    const countSpan = document.getElementById('notifCount');
+    if (countSpan) countSpan.innerText = notifications.length;
+    console.log('NOTIFICATION:', message);
 }
 
-// Send manual reminder
-function sendManualReminder(id) {
-    const apt = appointments.find(a => a.id === id);
-    if (!apt) return;
-    
-    const msg = `🔔 REMINDER: ${apt.name}, your ${apt.hairstyle} appointment is on ${apt.date} at ${apt.time}. Total: €${apt.totalPrice}, Deposit paid: €${apt.depositAmount}. See you! 💇‍♀️`;
-    addNotification(msg);
-    addNotification(`✅ Reminder sent to ${apt.name}`);
-    
-    if (!apt.reminderHistory) apt.reminderHistory = [];
-    apt.reminderHistory.push(`manual_${Date.now()}`);
-    saveAppointments();
-}
+// ============================================
+// PAYMENT & BOOKING FUNCTIONS
+// ============================================
 
-// Check reminders
-function checkReminders() {
-    const now = new Date();
+function updateDepositDisplay() {
+    const hairstyleSelect = document.getElementById('hairstyle');
+    const depositText = document.getElementById('depositAmountText');
+    const hairstyle = hairstyleSelect?.value;
     
-    appointments.forEach(apt => {
-        if (!apt.date || !apt.time) return;
-        
-        const aptDateTime = new Date(`${apt.date}T${apt.time}`);
-        if (isNaN(aptDateTime)) return;
-        
-        const hoursBefore = parseInt(apt.reminderHours);
-        const reminderTime = new Date(aptDateTime.getTime() - (hoursBefore * 60 * 60 * 1000));
-        const timeDiff = now - reminderTime;
-        
-        if (timeDiff >= 0 && timeDiff < 15 * 60 * 1000) {
-            const reminderKey = `${apt.id}_${hoursBefore}_${apt.date}`;
-            const alreadySent = apt.reminderHistory && apt.reminderHistory.includes(reminderKey);
-            
-            if (!alreadySent) {
-                const msg = `⏰ REMINDER: ${apt.name}, your ${apt.hairstyle} appointment is in ${hoursBefore} hour(s) at ${apt.time}!`;
-                addNotification(msg);
-                
-                if (!apt.reminderHistory) apt.reminderHistory = [];
-                apt.reminderHistory.push(reminderKey);
-                saveAppointments();
-            }
-        }
-    });
-}
-
-// Check for successful payment after redirect
-function checkPaymentSuccess() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const status = urlParams.get('status');
-    const tempBooking = sessionStorage.getItem('temp_booking');
-    
-    if (status === 'paid' && tempBooking) {
-        const bookingData = JSON.parse(tempBooking);
-        
-        appointments.push(bookingData);
-        saveAppointments();
-        renderAppointments();
-        
-        addNotification(`🎉 BOOKING CONFIRMED! ${bookingData.name}, your ${bookingData.hairstyle} is scheduled for ${bookingData.date} at ${bookingData.time}`);
-        addNotification(`💰 20% deposit (€${bookingData.depositAmount.toFixed(2)}) paid successfully! Remaining €${(bookingData.totalPrice - bookingData.depositAmount).toFixed(2)} due on day.`);
-        
-        sessionStorage.removeItem('temp_booking');
-        
-        // Clean URL
-        window.history.replaceState({}, document.title, window.location.pathname);
+    if (hairstyle && hairstylePrices[hairstyle]) {
+        const price = hairstylePrices[hairstyle];
+        const deposit = price * 0.2;
+        depositText.innerHTML = `20% deposit: €${deposit.toFixed(2)} (Total: €${price})`;
+    } else {
+        depositText.innerHTML = 'Select a hairstyle to see deposit';
     }
 }
 
-// Create booking and redirect to SumUp
-async function createBooking(e) {
-    e.preventDefault();
+function toggleAddressField() {
+    const serviceType = document.getElementById('serviceType')?.value;
+    const addressField = document.getElementById('addressField');
+    if (serviceType === 'housecall') {
+        addressField.style.display = 'block';
+    } else {
+        addressField.style.display = 'none';
+    }
+}
+
+function createBooking(event) {
+    event.preventDefault();
     
     const name = document.getElementById('clientName')?.value.trim();
     const email = document.getElementById('clientEmail')?.value.trim();
@@ -289,82 +215,109 @@ async function createBooking(e) {
         return;
     }
     
-    // Validate address for housecall
     if (serviceType === 'housecall' && !address) {
-        addNotification('❌ Please enter your full address for housecall service');
+        addNotification('❌ Please enter your address for housecall');
         return;
     }
     
     const selectedDate = new Date(date);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     
-    if (selectedDate < now) {
+    if (selectedDate < today) {
         addNotification('⚠️ Please choose a future date');
         return;
     }
     
-    // Calculate prices - NO extra charge for housecall
-    const basePrice = hairstylePrices[hairstyle] || 70;
-    const totalPrice = basePrice; // Housecall same price as studio
-    const depositAmount = totalPrice * 0.2;
+    const basePrice = hairstylePrices[hairstyle];
+    const depositAmount = basePrice * 0.2;
+    const bookingId = 'APT_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6).toUpperCase();
     
-    const bookingData = {
-        id: 'temp_' + Date.now(),
-        name, email, phone, serviceType, address: address || '',
-        hairstyle, duration, date, time,
+    const newBooking = {
+        id: bookingId,
+        name: name,
+        email: email,
+        phone: phone,
+        serviceType: serviceType,
+        address: address || '',
+        hairstyle: hairstyle,
+        duration: duration,
+        date: date,
+        time: time,
         reminderHours: parseInt(reminderHours),
-        notes, depositPaid: false,
-        totalPrice, depositAmount,
+        notes: notes,
+        depositPaid: false,
+        paymentFailed: false,
+        totalPrice: basePrice,
+        depositAmount: depositAmount,
         reminderHistory: [],
         createdAt: new Date().toISOString()
     };
     
-    // Store temp booking
-    sessionStorage.setItem('temp_booking', JSON.stringify(bookingData));
+    appointments.push(newBooking);
+    saveAppointments();
+    renderAppointments();
     
-    // Show loading overlay
-    loadingOverlay.classList.add('show');
+    addNotification(`📝 Booking created for ${name} - ${hairstyle} on ${date} at ${time}`);
+    addNotification(`💰 Please send €${depositAmount.toFixed(2)} deposit via Revolut: ${REVOLUT_LINK}`);
+    addNotification(`📝 Reference: ${bookingId}`);
     
-    try {
-        // Call your backend to create SumUp checkout
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                amount: depositAmount,
-                currency: 'EUR',
-                customerName: name,
-                customerEmail: email,
-                description: `20% deposit for ${hairstyle} - ${serviceType === 'studio' ? 'Studio' : 'Housecall'} - Total €${totalPrice}`,
-                successUrl: `${window.location.origin}${window.location.pathname}?status=paid`,
-                cancelUrl: `${window.location.origin}${window.location.pathname}?status=cancelled`
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.checkoutUrl) {
-            // Redirect to SumUp payment page
-            window.location.href = data.checkoutUrl;
-        } else {
-            throw new Error('No checkout URL received');
-        }
-        
-    } catch (error) {
-        console.error('Payment error:', error);
-        addNotification('❌ Unable to process payment. Please try again or contact us directly.');
-        loadingOverlay.classList.remove('show');
-        sessionStorage.removeItem('temp_booking');
+    window.open(REVOLUT_LINK, '_blank');
+    
+    document.getElementById('hairBookingForm').reset();
+    document.getElementById('serviceType').value = 'studio';
+    document.getElementById('address').value = '';
+    toggleAddressField();
+    updateDepositDisplay();
+}
+
+function confirmPayment(id) {
+    const apt = appointments.find(a => a.id === id);
+    if (apt && !apt.depositPaid) {
+        apt.depositPaid = true;
+        apt.paymentFailed = false;
+        saveAppointments();
+        renderAppointments();
+        addNotification(`✅ CONFIRMED! ${apt.name} paid €${apt.depositAmount} deposit via Revolut`);
     }
 }
 
-// Delete appointment
+function markPaymentFailed(id) {
+    const apt = appointments.find(a => a.id === id);
+    if (!apt) return;
+    
+    apt.paymentFailed = true;
+    saveAppointments();
+    renderAppointments();
+    addNotification(`❌ Payment marked as FAILED for ${apt.name}`);
+}
+
+function resendPaymentLink(id) {
+    const apt = appointments.find(a => a.id === id);
+    if (!apt) return;
+    
+    if (apt.paymentFailed) {
+        apt.paymentFailed = false;
+        saveAppointments();
+        renderAppointments();
+    }
+    
+    addNotification(`📧 Resending payment link to ${apt.name}`);
+    addNotification(`💰 Please send €${apt.depositAmount.toFixed(2)} deposit via Revolut: ${REVOLUT_LINK}`);
+    window.open(REVOLUT_LINK, '_blank');
+}
+
+function sendReminder(id) {
+    const apt = appointments.find(a => a.id === id);
+    if (!apt) return;
+    
+    const status = apt.depositPaid ? `Deposit paid: €${apt.depositAmount}` : `⚠️ Pending payment: €${apt.depositAmount} via ${REVOLUT_LINK}`;
+    addNotification(`🔔 REMINDER: ${apt.name}, your ${apt.hairstyle} on ${apt.date} at ${apt.time}. ${status}`);
+}
+
 function deleteAppointment(id) {
-    if (confirm('Are you sure you want to delete this appointment?')) {
-        const apt = appointments.find(a => a.id === id);
+    const apt = appointments.find(a => a.id === id);
+    if (apt && confirm(`Delete appointment for ${apt.name}?`)) {
         appointments = appointments.filter(a => a.id !== id);
         saveAppointments();
         renderAppointments();
@@ -372,7 +325,10 @@ function deleteAppointment(id) {
     }
 }
 
-// Open Edit Modal
+// ============================================
+// EDIT MODAL FUNCTIONS
+// ============================================
+
 function openEditModal(id) {
     const apt = appointments.find(a => a.id === id);
     if (!apt) return;
@@ -390,22 +346,17 @@ function openEditModal(id) {
     document.getElementById('modalReminderHours').value = apt.reminderHours;
     document.getElementById('modalNotes').value = apt.notes || '';
     
-    const modal = document.getElementById('editModal');
-    modal.style.display = 'block';
+    document.getElementById('editModal').style.display = 'block';
 }
 
-// Save edit
 function saveEdit() {
     const id = document.getElementById('modalEditId').value;
     const index = appointments.findIndex(a => a.id === id);
     
     if (index !== -1) {
-        const newServiceType = document.getElementById('modalServiceType').value;
         const newHairstyle = document.getElementById('modalHairstyle').value;
-        
+        const newServiceType = document.getElementById('modalServiceType').value;
         const basePrice = hairstylePrices[newHairstyle] || 70;
-        const totalPrice = basePrice; // No extra charge for housecall
-        const depositAmount = totalPrice * 0.2;
         
         appointments[index] = {
             ...appointments[index],
@@ -420,60 +371,61 @@ function saveEdit() {
             time: document.getElementById('modalTime').value,
             reminderHours: parseInt(document.getElementById('modalReminderHours').value),
             notes: document.getElementById('modalNotes').value,
-            totalPrice: totalPrice,
-            depositAmount: depositAmount
+            totalPrice: basePrice,
+            depositAmount: basePrice * 0.2
         };
         
         saveAppointments();
         renderAppointments();
-        addNotification(`✏️ Appointment updated for ${appointments[index].name}. New total: €${totalPrice}, Deposit: €${depositAmount}`);
+        addNotification(`✏️ Updated appointment for ${appointments[index].name}`);
         closeModal();
     }
 }
 
 function closeModal() {
-    const modal = document.getElementById('editModal');
-    if (modal) modal.style.display = 'none';
+    document.getElementById('editModal').style.display = 'none';
 }
 
-// Theme toggle
+// ============================================
+// THEME TOGGLE
+// ============================================
+
 function initThemeToggle() {
     let isAlt = false;
-    colorToggleBtn?.addEventListener('click', () => {
+    const btn = document.getElementById('colorToggleBtn');
+    const text = document.getElementById('toggleThemeText');
+    
+    btn?.addEventListener('click', () => {
         isAlt = !isAlt;
         if (isAlt) {
             document.body.classList.add('alternate');
-            toggleText.innerText = 'Purple';
+            text.innerText = 'Rose blush';
         } else {
             document.body.classList.remove('alternate');
-            toggleText.innerText = 'Rose blush';
+            text.innerText = 'Purple dusk';
         }
-        addNotification(`🎨 Theme changed to ${isAlt ? 'Purple' : 'Rose Blush'}`);
+        addNotification(`🎨 Theme changed to ${isAlt ? 'Purple Dusk' : 'Rose Blush'}`);
     });
 }
 
-// Notification panel
+// ============================================
+// NOTIFICATION PANEL
+// ============================================
+
 function initNotificationPanel() {
     const panel = document.getElementById('notifPanel');
     const openBtn = document.getElementById('openNotifBtn');
     const closeBtn = document.getElementById('closeNotifBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
     
-    openBtn?.addEventListener('click', () => {
-        panel.classList.toggle('open');
-    });
-    
-    closeBtn?.addEventListener('click', () => {
-        panel.classList.remove('open');
-    });
-    
+    openBtn?.addEventListener('click', () => panel.classList.toggle('open'));
+    closeBtn?.addEventListener('click', () => panel.classList.remove('open'));
     refreshBtn?.addEventListener('click', () => {
-        checkReminders();
         renderAppointments();
-        addNotification('🔄 Manual refresh complete');
+        addNotification('🔄 Refreshed');
     });
 }
 
-// Escape HTML
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -484,32 +436,29 @@ function escapeHtml(str) {
     });
 }
 
-// Event listeners
-document.querySelector('.close-modal')?.addEventListener('click', closeModal);
-document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
-document.getElementById('saveEditBtn')?.addEventListener('click', saveEdit);
+// ============================================
+// INITIALIZE
+// ============================================
 
-window.addEventListener('click', (e) => {
-    const modal = document.getElementById('editModal');
-    if (e.target === modal) closeModal();
-});
-
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadAppointments();
     initThemeToggle();
     initNotificationPanel();
-    checkReminders();
-    checkPaymentSuccess();
-    updatePriceDisplay();
+    updateDepositDisplay();
     toggleAddressField();
-    addNotification('🌸 Welcome to Hair Stylist Dublin & Drogheda!');
     
-    const form = document.getElementById('hairBookingForm');
-    if (form) {
-        form.addEventListener('submit', createBooking);
-    }
+    document.getElementById('hairBookingForm')?.addEventListener('submit', createBooking);
+    document.getElementById('serviceType')?.addEventListener('change', toggleAddressField);
+    document.getElementById('hairstyle')?.addEventListener('change', updateDepositDisplay);
+    
+    document.querySelector('.close-modal')?.addEventListener('click', closeModal);
+    document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
+    document.getElementById('saveEditBtn')?.addEventListener('click', saveEdit);
+    
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('editModal');
+        if (e.target === modal) closeModal();
+    });
+    
+    addNotification('🌸 Welcome to Hair Stylist Dublin & Drogheda!');
 });
-
-// Check reminders every 30 seconds
-setInterval(checkReminders, 30000);
