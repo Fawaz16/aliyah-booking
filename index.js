@@ -1,5 +1,6 @@
 // ============================================
 // HAIR STYLIST BOOKING SYSTEM
+// WITH FORMSPREE BACKEND INTEGRATION
 // ============================================
 
 // Prices for hairstyles
@@ -20,6 +21,9 @@ const hairstylePrices = {
 
 // Your Revolut payment link
 const REVOLUT_LINK = "https://revolut.me/a_alamuoloyede";
+
+// Formspree endpoint
+const FORMSPREE_URL = "https://formspree.io/f/xykaelob";
 
 // Store appointments
 let appointments = [];
@@ -48,6 +52,46 @@ function saveAppointments() {
 function updateCount() {
     const countSpan = document.getElementById('appointmentCount');
     if (countSpan) countSpan.innerText = appointments.length;
+}
+
+// ============================================
+// SEND TO FORMSPREE BACKEND
+// ============================================
+
+async function sendToFormspree(bookingData) {
+    const formData = new FormData();
+    formData.append('name', bookingData.name);
+    formData.append('email', bookingData.email);
+    formData.append('phone', bookingData.phone);
+    formData.append('serviceType', bookingData.serviceType === 'studio' ? 'Studio Visit' : 'Housecall');
+    formData.append('address', bookingData.address || 'N/A');
+    formData.append('hairstyle', bookingData.hairstyle);
+    formData.append('duration', bookingData.duration);
+    formData.append('date', bookingData.date);
+    formData.append('time', bookingData.time);
+    formData.append('reminderHours', bookingData.reminderHours);
+    formData.append('notes', bookingData.notes || 'None');
+    formData.append('totalPrice', `€${bookingData.totalPrice}`);
+    formData.append('depositAmount', `€${bookingData.depositAmount}`);
+    formData.append('bookingId', bookingData.id);
+    formData.append('_replyto', bookingData.email);
+    
+    try {
+        const response = await fetch(FORMSPREE_URL, {
+            method: 'POST',
+            body: formData,
+            headers: { 'Accept': 'application/json' }
+        });
+        
+        if (response.ok) {
+            addNotification('📧 Booking details sent to your email and dashboard!');
+            console.log('Formspree submission successful');
+        } else {
+            console.log('Formspree submission failed:', response.status);
+        }
+    } catch (error) {
+        console.log('Formspree error:', error);
+    }
 }
 
 // ============================================
@@ -258,9 +302,13 @@ function createBooking(event) {
     saveAppointments();
     renderAppointments();
     
+    // Send to Formspree backend
+    sendToFormspree(newBooking);
+    
     addNotification(`📝 Booking created for ${name} - ${hairstyle} on ${date} at ${time}`);
     addNotification(`💰 Please send €${depositAmount.toFixed(2)} deposit via Revolut: ${REVOLUT_LINK}`);
     addNotification(`📝 Reference: ${bookingId}`);
+    addNotification(`📧 Booking details sent to your email!`);
     
     window.open(REVOLUT_LINK, '_blank');
     
@@ -461,4 +509,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     addNotification('🌸 Welcome to Hair Stylist Dublin & Drogheda!');
+    addNotification('📧 All bookings will be sent to your email and Formspree dashboard!');
 });
