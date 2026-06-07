@@ -22,8 +22,8 @@ const hairstylePrices = {
 // Your Revolut payment link
 const REVOLUT_LINK = "https://revolut.me/a_alamuoloyede";
 
-// Formspree endpoint
-const FORMSPREE_URL = "https://formspree.io/f/xykaelob";
+// Formspree endpoint - UPDATED with your new one!
+const FORMSPREE_URL = "https://formspree.io/f/mrevprnb";
 
 // Store appointments
 let appointments = [];
@@ -302,13 +302,13 @@ function createBooking(event) {
     saveAppointments();
     renderAppointments();
     
-    // Send to Formspree backend
+    // Send to Formspree backend with your new endpoint
     sendToFormspree(newBooking);
     
     addNotification(`📝 Booking created for ${name} - ${hairstyle} on ${date} at ${time}`);
     addNotification(`💰 Please send €${depositAmount.toFixed(2)} deposit via Revolut: ${REVOLUT_LINK}`);
     addNotification(`📝 Reference: ${bookingId}`);
-    addNotification(`📧 Booking details sent to your email!`);
+    addNotification(`📧 Booking details sent to your email and Formspree dashboard!`);
     
     window.open(REVOLUT_LINK, '_blank');
     
